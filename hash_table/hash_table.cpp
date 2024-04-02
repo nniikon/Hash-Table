@@ -162,3 +162,32 @@ ht_Error ht_Destructor(ht_HashTable* ht) {
 
     return HT_ERR_NO;
 }
+
+
+void ht_Dump(ht_HashTable* ht) {
+    assert(ht);
+
+    LOG_START_COLOR(gLogFile, blue);
+
+    fprintf(gLogFile, "\n================ HASH TABLE DUMP ================\n");
+
+    for (size_t bucket = 0; bucket < ht->n_buckets; bucket++) {
+
+        List list = ht->lists[bucket];
+        int current_index = list.next[-1];
+
+        fprintf(gLogFile, "\t bucket %lu: \t\t", bucket);
+
+        while (current_index != -1) {
+            fprintf(gLogFile, "%s (%lu) | ", list.data[current_index].str,
+                                            list.data[current_index].occurrences);
+            current_index = list.next[current_index];
+        }
+
+        fprintf(gLogFile, "\n");
+    }
+
+    fprintf(gLogFile, "\n=================================================\n");
+    
+    LOG_END(gLogFile);
+}
