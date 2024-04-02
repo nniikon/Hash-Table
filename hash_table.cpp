@@ -35,17 +35,24 @@ void ht_SetLogFile(FILE* log_file) {
 
 
 inline static List ht_GetListByString(ht_HashTable* ht, const char* str,
-                                               size_t len, uint64_t* ret_hash) {
+                            size_t len, uint64_t* ret_hash, size_t* listIndex) {
 
     uint64_t hash = ht->hash_function((void*)str, len);
 
     size_t index = hash % ht->n_buckets;
 
+    List list = ht->lists[index];
+
+    // TODO: add error check
+    if (listIndex) {
+        listLookUp(&list, str, listIndex);
+    }
+
     if (ret_hash) {
         *ret_hash = hash;
     }
 
-    return ht->lists[index];
+    return list;
 }
 
 
@@ -53,20 +60,16 @@ ht_Error ht_Remove(ht_HashTable* ht, const char* str, size_t len) {
     assert(ht);
     assert(str);
 
-    List list = ht_GetListByString(ht, str, len, nullptr);
+    size_t listIndex = 0;
 
-    size_t foundIndex = 0;
-    DLL_Error err = listLookUp(&list, str, &foundIndex);
-    if (err) {
-        DUMP_RETURN_ERROR(HT_ERR_LIST);
-    }
+    List list = ht_GetListByString(ht, str, len, nullptr, &listIndex);
 
     // If the string is not in the list
-    if (foundIndex == -1) {
+    if (listIndex == -1) {
         return HT_ERR_NO_SUCH_ELEMENT;
     }
 
-    err = listDelete(&list, foundIndex);
+    DLL_Error err = listDelete(&list, listIndex);
     if (err) {
         DUMP_RETURN_ERROR(HT_ERR_LIST);
     }
@@ -79,21 +82,16 @@ ht_Error ht_LookUp(ht_HashTable* ht, const char* str, size_t len, size_t* value)
     assert(ht);
     assert(str);
 
-    List list = ht_GetListByString(ht, str, len, nullptr);
-
-    size_t foundIndex = 0;
-    DLL_Error err = listLookUp(&list, str, &foundIndex);
-    if (err) {
-        DUMP_RETURN_ERROR(HT_ERR_LIST);
-    }
+    size_t listIndex = 0;
+    List list = ht_GetListByString(ht, str, len, nullptr, &listIndex);
 
     // If the string is not in the list
-    if (foundIndex == -1) {
+    if (listIndex == -1) {
         *value = 0;
         return HT_ERR_NO_SUCH_ELEMENT;
     }
 
-    *value = list.data[foundIndex].occurrences;
+    *value = list.data[listIndex].occurrences;
     return HT_ERR_NO;
 }
 
@@ -103,17 +101,12 @@ ht_Error ht_Insert(ht_HashTable* ht, const char* str, size_t len) {
     assert(str);
 
     uint64_t hash = 0;
-    List list = ht_GetListByString(ht, str, len, &hash);
-
-    size_t foundIndex = 0;
-    DLL_Error err = listLookUp(&list, str, &foundIndex);
-    if (err) {
-        DUMP_RETURN_ERROR(HT_ERR_LIST);
-    }
+    size_t listIndex = 0;
+    List list = ht_GetListByString(ht, str, len, &hash, &listIndex);
 
     // If the string is already in the list
-    if (foundIndex != -1) {
-        list.data[foundIndex].occurrences++;
+    if (listIndex != -1) {
+        list.data[listIndex].occurrences++;
         return HT_ERR_NO;
     }
 
@@ -123,7 +116,7 @@ ht_Error ht_Insert(ht_HashTable* ht, const char* str, size_t len) {
         .occurrences = 1,
     };
 
-    err = listPushFront(&list, listElem);
+    DLL_Error err = listPushFront(&list, listElem);
     if (err) {
         DUMP_RETURN_ERROR(HT_ERR_LIST);
     }
