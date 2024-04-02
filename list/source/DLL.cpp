@@ -358,7 +358,7 @@ DLL_Error listLookUp(List* list, const char* str, int* value)
 
     int index = list->next[-1];
 
-    while (list->next[index] != -1) 
+    while (index != -1) 
     {
         listElem curData = list->data[index];
         if (strcmp(curData.str, str) == 0)
