@@ -3,6 +3,7 @@
 #include "../../logs/logs.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 
 static FILE* logFile = stderr;
@@ -351,7 +352,7 @@ DLL_Error listLinearize(List* list)
 }
 
 
-DLL_Error listLookUp(List* list, listElem value)
+DLL_Error listLookUp(List* list, const char* str, size_t* value)
 {
     LOGF(logFile, "listLookUp() started.\n");
 
@@ -359,11 +360,17 @@ DLL_Error listLookUp(List* list, listElem value)
 
     while (list->next[index] != -1) 
     {
-        
+        listElem curData = list->data[index];
+        if (strcmp(curData.str, str) == 0)
+        {
+            *value = index;
+            return DLL_ERR_OK;
+        }
+
         index = list->next[index];
     }
     
-
+    *value = -1;
     return DLL_ERR_OK;
 }
 
