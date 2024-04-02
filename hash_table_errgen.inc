@@ -1,0 +1,5 @@
+DEF_HT_ERR(NO,                        "No error")
+DEF_HT_ERR(MEMORY_ALLOCATION_FAILURE, "Failed to allocate memory")
+DEF_HT_ERR(LIST,                      "List error")
+DEF_HT_ERR(INVALID_INDEX_PASSED,      "Invalid index passed to the function")
+DEF_HT_ERR(NO_SUCH_ELEMENT,           "Given element doesn't exist")
