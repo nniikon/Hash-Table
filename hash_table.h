@@ -23,7 +23,7 @@ struct ht_HashTable {
 
 void     ht_SetLogFile(FILE* log_file);
 
-ht_Error ht_LookUp    (ht_HashTable* ht, const char* str, size_t len);
+ht_Error ht_LookUp    (ht_HashTable* ht, const char* str, size_t len, size_t* value);
 ht_Error ht_Insert    (ht_HashTable* ht, const char* str, size_t len);
 ht_Error ht_Destructor(ht_HashTable* ht);
 ht_Error ht_Contructor(ht_HashTable* ht, size_t n_buckets, 

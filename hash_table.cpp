@@ -32,6 +32,33 @@ void ht_SetLogFile(FILE* log_file) {
 }
 
 
+ht_Error ht_LookUp(ht_HashTable* ht, const char* str, size_t len, size_t* value) {
+    assert(ht);
+    assert(str);
+
+    uint64_t hash = ht->hash_function((void*)str, len);
+
+    size_t index = hash % ht->n_buckets;
+
+    List list = ht->lists[index];
+
+    size_t foundIndex = 0;
+    DLL_Error err = listLookUp(&list, str, &foundIndex);
+    if (err) {
+        DUMP_RETURN_ERROR(HT_ERR_LIST);
+    }
+
+    // If the string is not in the list
+    if (foundIndex == -1) {
+        *value = 0;
+        return HT_ERR_NO_SUCH_ELEMENT;
+    }
+
+    *value = list.data[foundIndex].occurrences;
+    return HT_ERR_NO;
+}
+
+
 ht_Error ht_Insert(ht_HashTable* ht, const char* str, size_t len) {
     assert(ht);
     assert(str);
