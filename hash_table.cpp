@@ -25,6 +25,8 @@ const char* ht_GetErrorMsg(ht_Error err) {
     #undef DEF_HT_ERR
 }
 
+inline static List ht_GetListByString(ht_HashTable* ht, const char* str,
+                                                size_t len, uint64_t* ret_hash);
 
 void ht_SetLogFile(FILE* log_file) {
     listSetLogFile(log_file);
@@ -32,15 +34,26 @@ void ht_SetLogFile(FILE* log_file) {
 }
 
 
-ht_Error ht_LookUp(ht_HashTable* ht, const char* str, size_t len, size_t* value) {
-    assert(ht);
-    assert(str);
+inline static List ht_GetListByString(ht_HashTable* ht, const char* str,
+                                               size_t len, uint64_t* ret_hash) {
 
     uint64_t hash = ht->hash_function((void*)str, len);
 
     size_t index = hash % ht->n_buckets;
 
-    List list = ht->lists[index];
+    if (ret_hash) {
+        *ret_hash = hash;
+    }
+
+    return ht->lists[index];
+}
+
+
+ht_Error ht_LookUp(ht_HashTable* ht, const char* str, size_t len, size_t* value) {
+    assert(ht);
+    assert(str);
+
+    List list = ht_GetListByString(ht, str, len, nullptr);
 
     size_t foundIndex = 0;
     DLL_Error err = listLookUp(&list, str, &foundIndex);
@@ -63,11 +76,8 @@ ht_Error ht_Insert(ht_HashTable* ht, const char* str, size_t len) {
     assert(ht);
     assert(str);
 
-    uint64_t hash = ht->hash_function((void*)str, len);
-
-    size_t index = hash % ht->n_buckets;
-
-    List list = ht->lists[index];
+    uint64_t hash = 0;
+    List list = ht_GetListByString(ht, str, len, &hash);
 
     size_t foundIndex = 0;
     DLL_Error err = listLookUp(&list, str, &foundIndex);
