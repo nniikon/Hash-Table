@@ -2,7 +2,7 @@
 
 #include <assert.h>
 #include <stdlib.h>
-#include "./logs/logs.h"
+#include "../logs/logs.h"
 
 static FILE* kLogFile = nullptr;
 

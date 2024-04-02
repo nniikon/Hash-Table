@@ -1,7 +1,7 @@
 #ifndef HASH_TABLE_H_
 #define HASH_TABLE_H_
 
-#include "./list/include/DLL.h"
+#include "../list/include/DLL.h"
 
 #include <inttypes.h>
 #include <stdio.h>
