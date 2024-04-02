@@ -4,11 +4,11 @@
 #include <stdlib.h>
 #include "../logs/logs.h"
 
-static FILE* kLogFile = nullptr;
+static FILE* gLogFile = nullptr;
 
 #define DUMP_RETURN_ERROR(err)                                                 \
     do {                                                                       \
-        LOGF_ERR(kLogFile, "%s\n", ht_GetErrorMsg(err));                       \
+        LOGF_ERR(gLogFile, "%s\n", ht_GetErrorMsg(err));                       \
         return err;                                                            \
     } while(0)
 
@@ -31,7 +31,7 @@ inline static List ht_GetListByString(ht_HashTable* ht, const char* str,
 
 void ht_SetLogFile(FILE* log_file) {
     listSetLogFile(log_file);
-    kLogFile = log_file;
+    gLogFile = log_file;
 }
 
 
