@@ -33,11 +33,26 @@ void ht_SetLogFile(FILE* log_file) {
 
 
 ht_Error ht_Insert(ht_HashTable* ht, const char* str, size_t len) {
+    assert(ht);
+    assert(str);
+
     uint64_t hash = ht->hash_function((void*)str, len);
 
     size_t index = hash % ht->n_buckets;
 
     List list = ht->lists[index];
+
+    size_t foundIndex = 0;
+    DLL_Error err = listLookUp(&list, str, &foundIndex);
+    if (err) {
+        DUMP_RETURN_ERROR(HT_ERR_LIST);
+    }
+
+    // If the string is already in the list
+    if (foundIndex != -1) {
+        list.data[foundIndex].occurrences++;
+        return HT_ERR_NO;
+    }
 
     ht_ListElem listElem = {
         .str = str,
@@ -45,7 +60,7 @@ ht_Error ht_Insert(ht_HashTable* ht, const char* str, size_t len) {
         .occurrences = 1,
     };
 
-    DLL_Error err = listPushFront(&list, listElem);
+    err = listPushFront(&list, listElem);
     if (err) {
         DUMP_RETURN_ERROR(HT_ERR_LIST);
     }
