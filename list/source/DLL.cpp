@@ -352,11 +352,11 @@ DLL_Error listLinearize(List* list)
 }
 
 
-DLL_Error listLookUp(List* list, const char* str, size_t* value)
+DLL_Error listLookUp(List* list, const char* str, int* value)
 {
     LOGF(logFile, "listLookUp() started.\n");
 
-    size_t index = list->next[-1];
+    int index = list->next[-1];
 
     while (list->next[index] != -1) 
     {

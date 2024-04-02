@@ -16,7 +16,7 @@ enum ht_Error
 };
 
 struct ht_HashTable {
-    uint64_t (*hash_function)(void* mem, size_t size); // expensive but beautiful
+    uint64_t (*hash_function)(const void* mem, size_t size); // expensive but beautiful
     size_t n_buckets;
     List* lists;
 };
@@ -28,6 +28,8 @@ ht_Error ht_LookUp    (ht_HashTable* ht, const char* str, size_t len, size_t* va
 ht_Error ht_Insert    (ht_HashTable* ht, const char* str, size_t len);
 ht_Error ht_Destructor(ht_HashTable* ht);
 ht_Error ht_Contructor(ht_HashTable* ht, size_t n_buckets, 
-                             uint64_t (*hash_function)(void* mem, size_t size));
+                       uint64_t (*hash_function)(const void* mem, size_t size));
+
+const char* ht_GetErrorMsg(ht_Error err);
 
 #endif

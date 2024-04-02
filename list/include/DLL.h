@@ -52,6 +52,6 @@ DLL_Error listPushFront     (List* list, listElem value);
 DLL_Error listPushBack      (List* list, listElem value);
 DLL_Error listChangeCapacity(List* list, float multiplier);
 DLL_Error listLinearize     (List* list);
-DLL_Error listLookUp(List* list, const char* str, size_t* value);
+DLL_Error listLookUp(List* list, const char* str, int* value);
 
 #endif

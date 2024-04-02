@@ -26,7 +26,8 @@ const char* ht_GetErrorMsg(ht_Error err) {
 }
 
 inline static List ht_GetListByString(ht_HashTable* ht, const char* str,
-                                                size_t len, uint64_t* ret_hash);
+                                size_t len, uint64_t* ret_hash, int* listIndex);
+
 
 void ht_SetLogFile(FILE* log_file) {
     listSetLogFile(log_file);
@@ -35,11 +36,11 @@ void ht_SetLogFile(FILE* log_file) {
 
 
 inline static List ht_GetListByString(ht_HashTable* ht, const char* str,
-                            size_t len, uint64_t* ret_hash, size_t* listIndex) {
+                               size_t len, uint64_t* ret_hash, int* listIndex) {
 
-    uint64_t hash = ht->hash_function((void*)str, len);
+    uint64_t hash = ht->hash_function((const void*)str, len);
 
-    size_t index = hash % ht->n_buckets;
+    int index = (int)(hash % ht->n_buckets);
 
     List list = ht->lists[index];
 
@@ -60,7 +61,7 @@ ht_Error ht_Remove(ht_HashTable* ht, const char* str, size_t len) {
     assert(ht);
     assert(str);
 
-    size_t listIndex = 0;
+    int listIndex = 0;
 
     List list = ht_GetListByString(ht, str, len, nullptr, &listIndex);
 
@@ -82,7 +83,7 @@ ht_Error ht_LookUp(ht_HashTable* ht, const char* str, size_t len, size_t* value)
     assert(ht);
     assert(str);
 
-    size_t listIndex = 0;
+    int listIndex = 0;
     List list = ht_GetListByString(ht, str, len, nullptr, &listIndex);
 
     // If the string is not in the list
@@ -101,7 +102,7 @@ ht_Error ht_Insert(ht_HashTable* ht, const char* str, size_t len) {
     assert(str);
 
     uint64_t hash = 0;
-    size_t listIndex = 0;
+    int listIndex = 0;
     List list = ht_GetListByString(ht, str, len, &hash, &listIndex);
 
     // If the string is already in the list
@@ -126,10 +127,9 @@ ht_Error ht_Insert(ht_HashTable* ht, const char* str, size_t len) {
 
 
 ht_Error ht_Contructor(ht_HashTable* ht, size_t n_buckets, 
-                            uint64_t (*hash_function)(void* mem, size_t size)) {
+                      uint64_t (*hash_function)(const void* mem, size_t size)) {
     assert(ht);
     assert(n_buckets > 0);
-
 
     List* lists = (List*) calloc(n_buckets, sizeof(List));
     if (lists == nullptr) {
