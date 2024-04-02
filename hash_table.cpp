@@ -49,6 +49,32 @@ inline static List ht_GetListByString(ht_HashTable* ht, const char* str,
 }
 
 
+ht_Error ht_Remove(ht_HashTable* ht, const char* str, size_t len) {
+    assert(ht);
+    assert(str);
+
+    List list = ht_GetListByString(ht, str, len, nullptr);
+
+    size_t foundIndex = 0;
+    DLL_Error err = listLookUp(&list, str, &foundIndex);
+    if (err) {
+        DUMP_RETURN_ERROR(HT_ERR_LIST);
+    }
+
+    // If the string is not in the list
+    if (foundIndex == -1) {
+        return HT_ERR_NO_SUCH_ELEMENT;
+    }
+
+    err = listDelete(&list, foundIndex);
+    if (err) {
+        DUMP_RETURN_ERROR(HT_ERR_LIST);
+    }
+
+    return HT_ERR_NO;
+}
+
+
 ht_Error ht_LookUp(ht_HashTable* ht, const char* str, size_t len, size_t* value) {
     assert(ht);
     assert(str);
