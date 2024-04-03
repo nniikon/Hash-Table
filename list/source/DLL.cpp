@@ -71,20 +71,20 @@ static DLL_Error allocListMem(listElem** data, int** prev, int** next, unsigned 
 {
     LOGF(logFile, "allocListMem() started\n");
 
-    *data = (listElem*) calloc(sizeof(data[0]), capacity + 1);
+    *data = (listElem*) calloc(sizeof(*data[0]), capacity + 1);
     if (data == NULL)
     {
         DUMP_AND_RETURN_ERROR(DLL_ERR_MEMORY_ALLOCATION_FAILURE);
     }
 
-    *prev = (int*) calloc(sizeof(prev[0]), capacity + 1);
+    *prev = (int*) calloc(sizeof(*prev[0]), capacity + 1);
     if (prev == NULL)
     {
         free(data);
         DUMP_AND_RETURN_ERROR(DLL_ERR_MEMORY_ALLOCATION_FAILURE);
     }
 
-    *next = (int*) calloc(sizeof(next[0]), capacity + 1);
+    *next = (int*) calloc(sizeof(*next[0]), capacity + 1);
     if (next == NULL)
     {
         free(data);
@@ -197,22 +197,23 @@ DLL_Error listInsertAfter(List* list, int index, listElem value)
         listChangeCapacity(list, DLL_CAPACITY_MULTIPLIER);
 
     int freeIndex = list->free;
+    list->free = list->next[freeIndex];
 
-    list->free = list->next[list->free];
     list->listInfo.size++;
 
     list->data[freeIndex] = value;
-    list->prev[list->next[index]] = freeIndex;
     list->next[freeIndex] = list->next[index];
-    list->prev[freeIndex] = index;
-
+    list->prev[freeIndex] = list->prev[list->next[index]];
     list->next[index] = freeIndex;
+    list->prev[list->next[freeIndex]] = freeIndex;
 
-    if (index == list->prev[-1])
+    if (list->prev[-1] == -1)
     {
         list->prev[-1] = freeIndex;
+        list->prev[freeIndex] = -1;
         LOGF_COLOR(logFile, green, "TAIL: %d\n", list->prev[-1]);
     }
+    LOGF_COLOR(logFile, green, "FREE: %d\n", list->free);
 
     return DLL_ERR_OK;
 }
@@ -356,17 +357,17 @@ DLL_Error listLookUp(List* list, const char* str, int* value)
 {
     LOGF(logFile, "listLookUp() started.\n");
 
-    int index = list->next[-1];
+    int index = list->next[-1];    
 
-    while (index != -1) 
+    while (index != -1)
     {
+        LOGF(logFile, "checking index: %d\n", index);
         listElem curData = list->data[index];
         if (strcmp(curData.str, str) == 0)
         {
             *value = index;
             return DLL_ERR_OK;
         }
-
         index = list->next[index];
     }
     
