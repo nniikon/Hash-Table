@@ -25,7 +25,7 @@ const char* ht_GetErrorMsg(ht_Error err) {
     #undef DEF_HT_ERR
 }
 
-inline static List ht_GetListByString(ht_HashTable* ht, const char* str,
+inline static List* ht_GetListByString(ht_HashTable* ht, const char* str,
                                 size_t len, uint64_t* ret_hash, int* listIndex);
 
 
@@ -35,18 +35,18 @@ void ht_SetLogFile(FILE* log_file) {
 }
 
 
-inline static List ht_GetListByString(ht_HashTable* ht, const char* str,
+inline static List* ht_GetListByString(ht_HashTable* ht, const char* str,
                                size_t len, uint64_t* ret_hash, int* listIndex) {
 
     uint64_t hash = ht->hash_function((const void*)str, len);
 
     int index = (int)(hash % ht->n_buckets);
 
-    List list = ht->lists[index];
+    List* list = &ht->lists[index];
 
     // TODO: add error check
     if (listIndex) {
-        listLookUp(&list, str, listIndex);
+        listLookUp(list, str, listIndex);
     }
 
     if (ret_hash) {
@@ -63,14 +63,14 @@ ht_Error ht_Remove(ht_HashTable* ht, const char* str, size_t len) {
 
     int listIndex = 0;
 
-    List list = ht_GetListByString(ht, str, len, nullptr, &listIndex);
+    List* list = ht_GetListByString(ht, str, len, nullptr, &listIndex);
 
     // If the string is not in the list
     if (listIndex == -1) {
         return HT_ERR_NO_SUCH_ELEMENT;
     }
 
-    DLL_Error err = listDelete(&list, listIndex);
+    DLL_Error err = listDelete(list, listIndex);
     if (err) {
         DUMP_RETURN_ERROR(HT_ERR_LIST);
     }
@@ -84,7 +84,7 @@ ht_Error ht_LookUp(ht_HashTable* ht, const char* str, size_t len, size_t* value)
     assert(str);
 
     int listIndex = 0;
-    List list = ht_GetListByString(ht, str, len, nullptr, &listIndex);
+    List* list = ht_GetListByString(ht, str, len, nullptr, &listIndex);
 
     // If the string is not in the list
     if (listIndex == -1) {
@@ -92,7 +92,7 @@ ht_Error ht_LookUp(ht_HashTable* ht, const char* str, size_t len, size_t* value)
         return HT_ERR_NO_SUCH_ELEMENT;
     }
 
-    *value = list.data[listIndex].occurrences;
+    *value = list->data[listIndex].occurrences;
     return HT_ERR_NO;
 }
 
@@ -103,11 +103,11 @@ ht_Error ht_Insert(ht_HashTable* ht, const char* str, size_t len) {
 
     uint64_t hash = 0;
     int listIndex = 0;
-    List list = ht_GetListByString(ht, str, len, &hash, &listIndex);
+    List* list = ht_GetListByString(ht, str, len, &hash, &listIndex);
 
     // If the string is already in the list
     if (listIndex != -1) {
-        list.data[listIndex].occurrences++;
+        list->data[listIndex].occurrences++;
         return HT_ERR_NO;
     }
 
@@ -117,7 +117,7 @@ ht_Error ht_Insert(ht_HashTable* ht, const char* str, size_t len) {
         .occurrences = 1,
     };
 
-    DLL_Error err = listPushFront(&list, listElem);
+    DLL_Error err = listPushFront(list, listElem);
     if (err) {
         DUMP_RETURN_ERROR(HT_ERR_LIST);
     }
@@ -164,12 +164,22 @@ ht_Error ht_Destructor(ht_HashTable* ht) {
 }
 
 
-void ht_Dump(ht_HashTable* ht) {
+void ht_Dump_internal(ht_HashTable* ht) {
     assert(ht);
 
     LOG_START_COLOR(gLogFile, blue);
 
     fprintf(gLogFile, "\n================ HASH TABLE DUMP ================\n");
+
+    LOG_START_COLOR(gLogFile, green);
+    fprintf(gLogFile, "freeIndex = %d\n", ht->lists[49].free);
+    for (int i = -1; i < 5; i++) {
+        //fprintf(gLogFile, "data[%d] = (%s)\n", i, ht->lists[49].data[i].str);
+        fprintf(gLogFile, "prev[%d] = (%d)\n", i, ht->lists[49].prev[i]);
+        fprintf(gLogFile, "next[%d] = (%d)\n", i, ht->lists[49].next[i]);
+
+    }
+    LOG_START_COLOR(gLogFile, blue);
 
     for (size_t bucket = 0; bucket < ht->n_buckets; bucket++) {
 
@@ -181,6 +191,7 @@ void ht_Dump(ht_HashTable* ht) {
         while (current_index != -1) {
             fprintf(gLogFile, "%s (%lu) | ", list.data[current_index].str,
                                             list.data[current_index].occurrences);
+
             current_index = list.next[current_index];
         }
 
