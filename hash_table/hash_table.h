@@ -21,6 +21,7 @@ struct ht_HashTable {
     List* lists;
 };
 
+const int ht_gMaxWordLen = 16;
 
 #ifndef NLOG 
     #define ht_Dump(...) ht_Dump_internal(__VA_ARGS__)
@@ -30,12 +31,12 @@ struct ht_HashTable {
 
 void     ht_SetLogFile(FILE* log_file);
 
-void     ht_Dump_internal(ht_HashTable* ht);
-ht_Error ht_Remove       (ht_HashTable* ht, const char* str, size_t len);
-ht_Error ht_LookUp       (ht_HashTable* ht, const char* str, size_t len, size_t* value);
-ht_Error ht_Insert       (ht_HashTable* ht, const char* str, size_t len);
-ht_Error ht_Destructor   (ht_HashTable* ht);
-ht_Error ht_Contructor   (ht_HashTable* ht, size_t n_buckets, 
+void     ht_Dump_internal  (ht_HashTable* ht);
+ht_Error ht_Remove         (ht_HashTable* ht, const char* str, size_t len);
+ht_Error ht_LookUp         (ht_HashTable* ht, const char* str, size_t len, size_t* value);
+ht_Error ht_Insert         (ht_HashTable* ht, const char* str, size_t len);
+ht_Error ht_Destructor     (ht_HashTable* ht);
+ht_Error ht_Contructor     (ht_HashTable* ht, size_t n_buckets, 
                        uint64_t (*hash_function)(const void* mem, size_t size));
 
 const char* ht_GetErrorMsg(ht_Error err);

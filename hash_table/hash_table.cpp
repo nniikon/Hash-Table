@@ -6,6 +6,8 @@
 
 static FILE* gLogFile = nullptr;
 
+// RETURN_AND_DUMP_ERROR();
+// RETURN_ON_ERROR_WITH_DUMB();
 #define DUMP_RETURN_ERROR(err)                                                 \
     do {                                                                       \
         LOGF_ERR(gLogFile, "%s\n", ht_GetErrorMsg(err));                       \
@@ -46,7 +48,7 @@ inline static List* ht_GetListByString(ht_HashTable* ht, const char* str,
 
     // TODO: add error check
     if (listIndex) {
-        listLookUp(list, str, listIndex);
+        listLookUp16(list, str, len, listIndex);
     }
 
     if (ret_hash) {
@@ -170,16 +172,6 @@ void ht_Dump_internal(ht_HashTable* ht) {
     LOG_START_COLOR(gLogFile, blue);
 
     fprintf(gLogFile, "\n================ HASH TABLE DUMP ================\n");
-
-    LOG_START_COLOR(gLogFile, green);
-    fprintf(gLogFile, "freeIndex = %d\n", ht->lists[49].free);
-    for (int i = -1; i < 5; i++) {
-        //fprintf(gLogFile, "data[%d] = (%s)\n", i, ht->lists[49].data[i].str);
-        fprintf(gLogFile, "prev[%d] = (%d)\n", i, ht->lists[49].prev[i]);
-        fprintf(gLogFile, "next[%d] = (%d)\n", i, ht->lists[49].next[i]);
-
-    }
-    LOG_START_COLOR(gLogFile, blue);
 
     for (size_t bucket = 0; bucket < ht->n_buckets; bucket++) {
 

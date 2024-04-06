@@ -4,6 +4,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <immintrin.h>
 
 
 static FILE* logFile = stderr;
@@ -353,7 +354,7 @@ DLL_Error listLinearize(List* list)
 }
 
 
-DLL_Error listLookUp(List* list, const char* str, int* value)
+DLL_Error listLookUp(List* list, const char* str, size_t len, int* value)
 {
     LOGF(logFile, "listLookUp() started.\n");
 
@@ -363,7 +364,7 @@ DLL_Error listLookUp(List* list, const char* str, int* value)
     {
         LOGF(logFile, "checking index: %d\n", index);
         listElem curData = list->data[index];
-        if (strcmp(curData.str, str) == 0)
+        if (strncmp(curData.str, str, len) == 0)
         {
             *value = index;
             return DLL_ERR_OK;
@@ -371,6 +372,43 @@ DLL_Error listLookUp(List* list, const char* str, int* value)
         index = list->next[index];
     }
     
+    *value = -1;
+    return DLL_ERR_OK;
+}
+
+
+DLL_Error listLookUp16(List* list, const char* str, size_t len, int* value)
+{
+    LOGF(logFile, "listLookUp() started.\n");
+
+    int index = list->next[-1];    
+
+    union 
+    {
+        __m128 _refStr16;
+        char zeroedStr[16] = {};
+    };
+
+    memcpy(zeroedStr, str, len);
+
+    __m128i _refStr16_register = _mm_loadu_si128((__m128i*)zeroedStr);
+
+    while (index != -1)
+    {
+        LOGF(logFile, "checking index: %d\n", index);
+        listElem curData = list->data[index];
+
+        __m128i _testStr16 = _mm_loadu_si128((const __m128i*)curData.str);
+
+        __m128i cmp = _mm_xor_si128(_refStr16_register, _testStr16);
+        if (_mm_test_all_zeros(cmp, cmp)) {
+            *value = index;
+            return DLL_ERR_OK;
+        }
+
+        index = list->next[index];
+    }
+
     *value = -1;
     return DLL_ERR_OK;
 }

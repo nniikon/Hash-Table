@@ -16,4 +16,7 @@
  */
 void* ftbPutFileToBuffer(size_t* size, FILE* file);
 
+
+void* ftbTransferBufferTo16(size_t* size, FILE* file);
+
 #endif

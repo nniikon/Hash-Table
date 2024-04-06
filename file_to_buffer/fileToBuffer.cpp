@@ -4,6 +4,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <unistd.h>
+#include <string.h>
 
 
 static ssize_t getFileSize(FILE* file)
@@ -47,10 +48,46 @@ void* ftbPutFileToBuffer(size_t* size, FILE* file)
 
     if (buffer == nullptr)
         return nullptr;
-    buffer[bufferSize] = '\0';
 
     if (size != nullptr)
         *size = bufferSize;
 
     return buffer;
+}
+
+
+void* ftbTransferBufferTo16(size_t* size, FILE* file) 
+{
+    size_t origSize = 0;
+    char* origBuffer = (char*) ftbPutFileToBuffer(&origSize, file);
+    if (origBuffer == nullptr)
+    {
+        return nullptr;
+    }
+
+    char* newBuffer = (char*) calloc(origSize * 16, 1);
+    if (newBuffer == nullptr)
+    {
+
+        free(origBuffer);
+        return nullptr;
+    }
+
+    size_t newBufferIndex = 0;
+    char* currentWord = origBuffer;
+    while (currentWord < origBuffer + origSize)
+    {
+        size_t wordLength = strlen(currentWord);
+        
+        memcpy(newBuffer + newBufferIndex, currentWord, wordLength);
+        
+        newBufferIndex += 16;
+        
+        currentWord += wordLength + 1;
+    }
+
+    *size = newBufferIndex;
+
+    free(origBuffer);
+    return newBuffer;
 }
