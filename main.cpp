@@ -1,96 +1,137 @@
 #include <inttypes.h>
+#include <stdio.h>
+#include <string.h>
+#include <immintrin.h>
 
 #include "./hash_table/hash_table.h"
 #include "./logs/logs.h"
 #include "./file_to_buffer/fileToBuffer.h"
-
-const char gLogFileName[] = "./build/log_file.html";
-
-uint64_t TestHashFunction(const void* mem, size_t len) {
-
-    const char* ch_mem = (const char*)mem;
-
-    uint64_t hash = 0;
-    for (size_t i = 0; i < len; i++) {
-        hash += (size_t)ch_mem[i] * i;
-    }
-
-    return hash;
-}
+#include "./hash_functions/hash_functions.h"
 
 
-int InsertDictionary(ht_HashTable* ht, const char* file_name) {
-    FILE* file = fopen(file_name, "r");
-    if (file == nullptr) {
-        return -1;
-    }
+const char gLogFileName[]    = "./build/log_file.html";
+const char gDictName[]       = "dict.txt";
 
-    size_t size = 0;
-
-    char* c_dict = (char*) ftbPutFileToBuffer(&size, file);
-    if (c_dict == nullptr) {
-        fclose(file);
-        return -1;
-    }
-
-    size_t cur_pos = 0;
-
-    while (cur_pos < size) {
-        int num_len = 0; 
-        size_t len = 0;
-        const char* str = nullptr;
-
-        sscanf(c_dict + cur_pos, "%lu$%n", &len, &num_len);
-        cur_pos += (size_t)num_len;
-        str = c_dict + cur_pos;
-        cur_pos += len + 1;
-        fprintf(stderr, "curpos:    %lu\n", cur_pos);
-        fprintf(stderr, "len:       %lu\n", len);
-        fprintf(stderr, "num_len:   %d \n", num_len);
-        fprintf(stderr, "word:      %s \n", str);
-
-        ht_Error err = ht_Insert(ht, str, len);
-        if (err) {
-            fclose(file);
-            return -1;
-        }
-
-        ht_Dump(ht);
-    }
-
-    
-    free(c_dict);
-    fclose(file);
-    return 0;
-}
-
+int InsertDictionary (ht_HashTable* ht, const char* c_dict, size_t size);
+int TestLookUp       (ht_HashTable* ht, const char* file_name);
 
 int main() {
+    FILE* log_file = nullptr;
+    int ret_value = 0;
+    size_t dict_size = 0;
+    char* c_dict = nullptr;
+    ht_HashTable ht = {};
+    ht_Error err = HT_ERR_NO;
 
-    FILE* log_file = logOpenFile(gLogFileName);
+    FILE* file = fopen(gDictName, "r");
+    if (file == nullptr) {
+        ret_value = -1;
+        goto fail_file;
+    }
+
+    c_dict = (char*) ftbTransferBufferTo16(&dict_size, file);
+    if (c_dict == nullptr) {
+        ret_value = -1;
+        goto fail_dict;
+    }
+
+    log_file = logOpenFile(gLogFileName);
     if (log_file == nullptr) {
-        return 1;
+        ret_value = -1;
+        goto fail_logfile;
     }
 
     ht_SetLogFile(log_file);
 
-    ht_HashTable ht = {};
-
-    ht_Error err = ht_Contructor(&ht, 257, TestHashFunction);
+    err = ht_Contructor(&ht, 100000, HashCRC32_inline);
     if (err) {
-        fclose(log_file);
-        return 2;
+        ret_value = -1;
+        goto fail_constructor;
     }
 
-    const char* hui = "montaque";
-    ht_Insert(&ht, hui, 8);
-    ht_Insert(&ht, hui, 8);
-    //InsertDictionary(&ht, "output.txt");
+    if (InsertDictionary(&ht, c_dict, dict_size)) {
+        ret_value = -1;
+        goto fail_insert;
+    }
 
-    ht_Dump(&ht);
+    if (TestLookUp(&ht, "dict.txt"))
+    {
+        ret_value = -1;
+        goto fail_insert;
+    }
 
-    fclose(log_file);
+fail_insert:
     ht_Destructor(&ht);
+fail_constructor:
+    fclose(log_file);
+fail_logfile:
+    free(c_dict);
+fail_dict:
+    fclose(file);
+fail_file:
+    return ret_value;
+}
 
+
+int TestLookUp(ht_HashTable* ht, const char* file_name) {
+    if (!ht)
+        return -1;
+
+    FILE* lookup_file = fopen(file_name, "r");
+    if (lookup_file == nullptr) {
+        return -1;
+    }
+
+    size_t lookup_size = 0;
+    char* c_lookup = (char*)ftbPutFileToBuffer(&lookup_size, lookup_file);
+    if (c_lookup == nullptr) {
+        fclose(lookup_file);
+        return -1;
+    }
+
+    uint64_t start_time = __rdtsc();
+
+    for (int i = 0; i < 200000; i++) {
+        size_t cur_pos = 0;
+        while (cur_pos < lookup_size) {
+            const char* word = c_lookup + cur_pos;
+            size_t len = strlen(word);
+
+            size_t value = 0;
+            //ht_LookUp(ht, word, len, &value);
+            HashCRC32_inline(word, len);
+
+            //fprintf(stderr, "word: %s (%lu)\n", word, value);
+
+            cur_pos += len + 1;
+        }
+    }
+
+    uint64_t end_time = __rdtsc();
+
+    fprintf(stderr, "Time taken: %lg\n", (double)(end_time - start_time)/1e10);
+    
+    fclose(lookup_file);
+    free(c_lookup);
+
+    return 0;
+}
+
+
+
+int InsertDictionary(ht_HashTable* ht, const char* c_dict, size_t size) {
+    const char* str = c_dict;
+
+    while (str < c_dict + size) {
+        size_t len = strlen(str);
+
+        ht_Error err = ht_Insert(ht, str, len);
+        if (err) {
+            return -1;
+        }
+
+        str += ht_gMaxWordLen;
+    }
+    
     return 0;
 }
