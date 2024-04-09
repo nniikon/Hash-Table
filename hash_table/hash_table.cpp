@@ -48,7 +48,7 @@ inline static List* ht_GetListByString(ht_HashTable* ht, const char* str,
 
     // TODO: add error check
     if (listIndex) {
-        listLookUp16(list, str, len, listIndex);
+        listLookUp16_hash(list, str, hash, len, listIndex);
     }
 
     if (ret_hash) {

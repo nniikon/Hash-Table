@@ -54,5 +54,6 @@ DLL_Error listChangeCapacity(List* list, float multiplier);
 DLL_Error listLinearize     (List* list);
 DLL_Error listLookUp        (List* list, const char* str, size_t len, int* value);
 DLL_Error listLookUp16      (List* list, const char* str, size_t len, int* value);
+DLL_Error listLookUp16_hash (List* list, const char* str, uint64_t hash, size_t len, int* value);
 
 #endif
