@@ -9,17 +9,20 @@ struct HashFunction {
     const char* description;
 };
 
-uint64_t HashZero       (const void* mem, size_t size);
-uint64_t HashLength     (const void* mem, size_t size);
-uint64_t HashLetter     (const void* mem, size_t size);
-uint64_t HashSum        (const void* mem, size_t size);
-uint64_t HashNormalSum  (const void* mem, size_t size);
-uint64_t HashRotateRight(const void* mem, size_t size);
-uint64_t HashRotateLeft (const void* mem, size_t size);
-uint64_t HashCRC32      (const void* mem, size_t size);
-uint64_t HashKR         (const void* mem, size_t size);
-uint64_t HashJenkins    (const void* mem, size_t size);
-uint64_t HashElf        (const void* mem, size_t size);
+uint64_t HashZero        (const void* mem, size_t size);
+uint64_t HashLength      (const void* mem, size_t size);
+uint64_t HashLetter      (const void* mem, size_t size);
+uint64_t HashSum         (const void* mem, size_t size);
+uint64_t HashNormalSum   (const void* mem, size_t size);
+uint64_t HashRotateRight (const void* mem, size_t size);
+uint64_t HashRotateLeft  (const void* mem, size_t size);
+uint64_t HashKR          (const void* mem, size_t size);
+uint64_t HashJenkins     (const void* mem, size_t size);
+uint64_t HashElf         (const void* mem, size_t size);
+uint64_t HashMurmur2     (const void* mem, size_t size);
+extern "C" uint64_t HashCRC32_asm  (const void* mem, size_t size);
+uint64_t HashCRC32_C     (const void* mem, size_t size);
+uint64_t HashCRC32_inline(const void* mem, size_t size);
 
 const HashFunction gHashFunctions[] = 
 {
@@ -32,7 +35,9 @@ const HashFunction gHashFunctions[] =
     {HashRotateRight, "ROR hash"},
     {HashJenkins,     "Jenkins Hash"},
     {HashElf,         "Elf Hash"},
-    {HashCRC32,       "CRC32 hash"},
+    {HashCRC32_C,     "CRC32_C hash"},
+    {HashCRC32_asm,   "CRC32_asm hash"},
+    {HashMurmur2,     "murmur hash"},
     {HashKR,          "KR Hash"},
 };
 
