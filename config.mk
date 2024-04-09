@@ -1,4 +1,4 @@
-CFLAGS = -O1 -Wall \
+CFLAGS = -O3 -Wall \
 -Wmissing-declarations -Wcast-align -Wcast-qual \
 -Wchar-subscripts -Wconversion \
 -Wempty-body -Wfloat-equal -Wformat-nonliteral -Wformat-security \
@@ -12,14 +12,12 @@ CFLAGS = -O1 -Wall \
 -Wno-varargs -Wstack-protector -fcheck-new \
 -fstack-protector -fstrict-overflow \
 -fno-omit-frame-pointer \
--fsanitize=address,bool,bounds,enum,float-cast-overflow,$\
-float-divide-by-zero,integer-divide-by-zero,leak,nonnull-attribute,null,$\
-object-size,return,returns-nonnull-attribute,shift,signed-integer-overflow,$\
-undefined,unreachable,vla-bound,vptr
 
-CFLAGS += -D DEBUG
-CFLAGS += -D LOG
+CFLAGS += -march=znver2
+CFLAGS += -masm=intel
 
+CFLAGS += -D NDEBUG
+CFLAGS += -D NLOG
 export CFLAGS
 
 export BUILD_DIR = ${CURDIR}/build
