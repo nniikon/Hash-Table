@@ -83,11 +83,13 @@ by replacing the rol() function with a single assembly instruction:
 
 ### Advance hashes
 
-![](./histograms/KR.png =49%x)
-![](./histograms/Jenkins.png =49%x)
-![](./histograms/Elf.png =49%x)
-![](./histograms/CRC32_C.png =49%x)
-![](./histograms/murmur.png =49%x)
+<p float="left">
+    <img src="./histograms/KR.png" alt="drawing" width="501"/>
+    <img src="./histograms/Jenkins.png" alt="drawing" width="501"/>
+    <img src="./histograms/Elf.png" alt="drawing" width="501"/>
+    <img src="./histograms/CRC32_C.png" alt="drawing" width="501"/>
+    <img src="./histograms/murmur.png" alt="drawing" width="501"/>
+</p>
 
 - KR: K&R Hash function
     - Variance: 3.758
