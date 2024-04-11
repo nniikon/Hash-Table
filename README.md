@@ -21,10 +21,11 @@ this research will intentionally test hash table performance in such scenarios.
 ## Part 1. Hash functions
 
 ### Naive Hashes
-
-![](./histograms/Zero.png =49%x) 
-![](./histograms/Length.png =49%x)
-![](./histograms/First.png =49%x)
+<p float="left">
+    <img src="./histograms/Zero.png" alt="drawing"   width="501"/>
+    <img src="./histograms/Length.png" alt="drawing" width="501"/>
+    <img src="./histograms/First.png" alt="drawing"  width="501"/>
+</p>
 
 The first three hash functions implemented are:
 - Zero: Always returns zero.
@@ -38,8 +39,11 @@ As expected, those functions poorly distribute the words among lists.
 
 ### ASCII sums hashes
 
-![](./histograms/Normilized.png =49%x)
-![](./histograms/Ascii.png =49%x)
+<p float="left">
+    <img src="./histograms/Normilized.png" alt="drawing" width="501"/>
+    <img src="./histograms/Ascii.png" alt="drawing"      width="501"/>
+</p>
+
 
 - Normilized: Returns the sum of ASCII codes devided by the length of the words.
     - Variance: 1460
@@ -48,10 +52,12 @@ As expected, those functions poorly distribute the words among lists.
 
 The ASCII hash function proved to be relatively effective, despite the simplicity of the algorithm
 
-### Rotate hashes 
+### Rotate hashes
 
-![](./histograms/ROL.png =49%x)
-![](./histograms/ROR.png =49%x)
+<p float="left">
+    <img src="./histograms/ROL.png" alt="drawing" width="501"/>
+    <img src="./histograms/ROR.png" alt="drawing" width="501"/>
+</p>
 
 - ROL: Rolling On Left hash 
     - Variance: 4.72
@@ -168,7 +174,7 @@ But this optimization is out of scope of this research, so I won't implement it.
 Even though I intentionally created the hash table small in the first place,
 I think it's finally the time to increase the number of buckets. 
 
-![](./media/hash_size.png =75%x)
+![](./media/hash_size.png)
 
 I'm going to set the number of buckets to 100000 (around 40MiB) to avoid list lookup latency at all.
 
