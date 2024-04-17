@@ -15,7 +15,7 @@ with doubly linked lists that are responsible for handling collisions.
     - Separate assembly file
 
 ### High Load Factor Testing
-While a load factor greater than 2 is generally considered suboptimal,
+While a load factor greater than 2 is considered suboptimal,
 this research will intentionally test hash table performance in such scenarios.
 
 ## Part 1. Hash functions
@@ -45,7 +45,7 @@ As expected, those functions poorly distribute the words among lists.
 </p>
 
 
-- Normilized: Returns the sum of ASCII codes devided by the length of the words.
+- Normilized: Returns the sum of ASCII codes divided by the length of the words.
     - Variance: 1460
 - ASCII: Returns the sum of ASCII codes
     - Variance: 26
@@ -131,16 +131,16 @@ The performance analysis with `perf` shows that the `strcmp()` function takes up
 of the program's execution time.
 Unfortunately, I stand no chance against the authors of the C standard library. 
 So in order to optimize the `strcmp()` I'll use additional information about 
-the words' lengths.
+the word lengths.
 
 
 *Fun fact*: the longest word in the book is *serving-creature*. Luckily I didn't
-include the dashes into the hash table, so the actual longest word is *servingcreature* - exactly
+include the hyphens in the hash table, so the actual longest word is *servingcreature* - exactly
 16 letters. What a coincidence!
 
-So the idea is simple. Let's allocate a 16-byte space for each word.
-That way, the algorithm complexity for comparing two words is O(1).
-To be more exact, it requires a single AVX2 comparison.
+So the idea is simple. Let's allocate 16 bytes for each word.
+This way, the algorithm complexity for comparing two words is O(1).
+Specifically, it's a single AVX2 comparison.
 
 ```C
 ...
@@ -158,10 +158,10 @@ Also, it only works for at max 16-byte words.
 
 
 ## Using hashes 
-Since even after optimizing `strcmp` it still ruins the performance,
-so we should try to use it as little as we can. The idea is very simple.
-If collision occurres, it only means that the string hashes have the same remainders after the division by the size.
-And in the most cases the *full 64-bit* hashes will be different
+Because even after optimizing `strcmp` it still ruins performance,
+we should try to use it as little as possible. The idea is quite simple.
+When a collision occurs, it just means that the string hashes have the same remainders after division by size.
+And in most cases, the *full 64-bit* hashes will be different.
 
 The execution time with this optimization is 3.93 * 10^10 ticks, which is a 22% improvement.
 
@@ -178,13 +178,13 @@ I think it's finally the time to increase the number of buckets.
 
 ![](./media/hash_size.png)
 
-I'm going to set the number of buckets to 100000 (around 40MiB) to avoid list lookup latency at all.
+I'm going to set the number of buckets to 100000 (about 40MiB of RAM) to avoid list lookup latency at all.
 
 The new time is 1.9 * 10^10 ticks.
 
 ## Optimizing hash function
 
-Now, hash function is taking up 26% of the execution time. So let's optimize it.
+Now, the hash function takes up 26% of the execution time. So let's optimize it.
 
 There's the original CRC32 hash:
 
